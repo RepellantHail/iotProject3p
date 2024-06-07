@@ -2,7 +2,7 @@ import { Stack, useNavigation } from 'expo-router';
 import { Text, View } from 'react-native';
 import { useEffect } from 'react';
 
-export default function Settings() {
+export default function Alarms() {
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -11,7 +11,7 @@ export default function Settings() {
 
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Settings Screen</Text>
+      <Text>Alarms Screen</Text>
     </View>
   );
 }
