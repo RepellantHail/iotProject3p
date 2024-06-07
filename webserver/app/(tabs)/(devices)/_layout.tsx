@@ -1,9 +1,9 @@
 import { Stack } from 'expo-router';
 
-export default function HomeLayout() {
+export default function DevicesLayout() {
   return (
     <Stack>
-      <Stack.Screen name="Home" />
+      <Stack.Screen name="Devices" />
     </Stack>
   );
 }
