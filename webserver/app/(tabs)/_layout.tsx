@@ -12,7 +12,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="alarms"
+        name="(alarms)"
         options={{
           title: 'Alarms',
           tabBarIcon: ({ color }) => <FontAwesome size={28} name="bell" color={color} />,

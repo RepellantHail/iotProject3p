@@ -6,7 +6,7 @@ export default function Alarms() {
   const navigation = useNavigation();
 
   useEffect(() => {
-    navigation.setOptions({ headerShown: false });
+    navigation.setOptions({ headerTitle: 'Alarms' });
   }, [navigation]);
 
   return (
