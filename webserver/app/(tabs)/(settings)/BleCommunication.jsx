@@ -9,12 +9,22 @@ const BleCommunication = () => {
 
   useEffect(() => {
     const initializeBluetooth = async () => {
-      if (Platform.OS === 'android') {
-        const granted = await requestBluetoothPermission();
-        setHasPermission(granted);
+      if (typeof navigator !== "undefined" && "permissions" in navigator) {
+        try {
+          // Request location permission using Geolocation API
+          const permissionStatus = await navigator.permissions.query({
+            name: "geolocation",
+          });
+          if (permissionStatus.state === "granted") {
+            setHasPermission(true);
+          } else {
+            console.error("Geolocation permission denied");
+          }
+        } catch (error) {
+          console.error("Error requesting location permission:", error);
+        }
       } else {
-        // For iOS or other platforms, assume permission is granted
-        setHasPermission(true);
+        console.error("Geolocation API is not available");
       }
     };
     initializeBluetooth();
@@ -28,30 +38,73 @@ const BleCommunication = () => {
   }, [hasPermission, bleManager]);
 
   const requestBluetoothPermission = async () => {
-    if (Platform.OS === 'android') {
-      try {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-          {
-            title: 'Location Permission',
-            message: 'Bluetooth needs access to your location',
-            buttonNeutral: 'Ask Me Later',
-            buttonNegative: 'Cancel',
-            buttonPositive: 'OK',
-          }
-        );
-        return granted === PermissionsAndroid.RESULTS.GRANTED;
-      } catch (error) {
-        console.error('Error requesting location permission:', error);
+    if (typeof window !== "undefined") {
+      // Check if Geolocation API is available
+      if ("geolocation" in navigator) {
+        try {
+          // Request location permission using Geolocation API
+          await navigator.permissions.request({ name: "geolocation" });
+          // Permission granted
+          return true;
+        } catch (error) {
+          console.error("Error requesting location permission:", error);
+          // Permission denied or error occurred
+          return false;
+        }
+      } else {
+        console.error("Geolocation API is not available");
+        // Geolocation API not available
         return false;
       }
+    } else {
+      console.error("Window object is not available");
+      // Window object not available
+      return false;
     }
-    return true;
+    if (
+      Platform.OS === "android" &&
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+    ) {
+      const apiLevel = parseInt(Platform.Version.toString(), 10);
+
+      if (apiLevel < 31) {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+        );
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      }
+      if (
+        PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN &&
+        PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT
+      ) {
+        const result = await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        ]);
+
+        return (
+          result["android.permission.BLUETOOTH_CONNECT"] ===
+            PermissionsAndroid.RESULTS.GRANTED &&
+          result["android.permission.BLUETOOTH_SCAN"] ===
+            PermissionsAndroid.RESULTS.GRANTED &&
+          result["android.permission.ACCESS_FINE_LOCATION"] ===
+            PermissionsAndroid.RESULTS.GRANTED
+        );
+      }
+
+      this.showErrorToast("Permission have not been granted");
+      return false;
+    } else if (Platform.OS === "ios") {
+      return true;
+    }
   };
 
   const scanForDevices = async () => {
     if (!hasPermission || !bleManager) {
-      console.error('Bluetooth manager is not initialized or permission is not granted');
+      console.error(
+        "Bluetooth manager is not initialized or permission is not granted"
+      );
       return;
     }
 
@@ -63,7 +116,7 @@ const BleCommunication = () => {
         return;
       }
       if (device) {
-        setDiscoveredDevices(prevDevices => [...prevDevices, device]);
+        setDiscoveredDevices((prevDevices) => [...prevDevices, device]);
       }
     });
 
