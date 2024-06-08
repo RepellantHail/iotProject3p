@@ -3,10 +3,7 @@ import { Button, FlatList, StyleSheet, Text, View } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { Device } from "react-native-ble-plx";
-import {
-  BleCommunication,
-  requestBluetoothPermission,
-} from "./BleCommunication";
+import BleCommunication from "./BleCommunication";
 
 const renderItem = ({ item }: { item: Device }) => {
   return (
@@ -17,25 +14,38 @@ const renderItem = ({ item }: { item: Device }) => {
   );
 };
 
+interface BleCommunicationResult {
+  discoveredDevices: Device[]; // Assuming Device is a type defined elsewhere
+  isScanning: boolean;
+  hasPermission: boolean;
+  scanForDevices: () => Promise<void>;
+  requestBluetoothPermission: () => Promise<boolean>;
+}
+
 export default function Settings() {
-  const { scanForDevices, discoveredDevices, isScanning } = BleCommunication();
+  // Assign the BleCommunication result to the defined type
+  const bleCommunicationResult: BleCommunicationResult = BleCommunication();
 
   return (
     <ThemedView style={styles.container}>
       <ThemedText style={styles.titleText}>Settings Screen</ThemedText>
       <Button
-        title={isScanning ? "Stop Scanning" : "Scan for Devices"}
+        title={
+          bleCommunicationResult.isScanning
+            ? "Stop Scanning"
+            : "Scan for Devices"
+        }
         onPress={async () => {
-          await requestBluetoothPermission();
-          scanForDevices();
+          await bleCommunicationResult.requestBluetoothPermission();
+          bleCommunicationResult.scanForDevices();
         }}
-        disabled={isScanning} // Disable button if scanning is in progress
+        disabled={bleCommunicationResult.isScanning}
       />
-      {discoveredDevices.length > 0 && (
+      {bleCommunicationResult.discoveredDevices.length > 0 && (
         <FlatList
-          data={discoveredDevices}
+          data={bleCommunicationResult.discoveredDevices}
           renderItem={renderItem}
-          keyExtractor={(item) => item.id} // Assuming devices have unique IDs
+          keyExtractor={(item) => item.id}
           style={styles.deviceList}
         />
       )}
