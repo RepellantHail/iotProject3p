@@ -1,6 +1,8 @@
-import { Stack, useNavigation } from 'expo-router';
-import { Text, View } from 'react-native';
-import { useEffect } from 'react';
+import { Stack, useNavigation } from "expo-router";
+import { Text, View } from "react-native";
+import { useEffect } from "react";
+import { ThemedView } from "@/components/ThemedView";
+import { ThemedText } from "@/components/ThemedText";
 
 export default function Devices() {
   const navigation = useNavigation();
@@ -10,8 +12,10 @@ export default function Devices() {
   }, [navigation]);
 
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Devices Screen</Text>
-    </View>
+    <ThemedView
+      style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+    >
+      <ThemedText>Devices Screen</ThemedText>
+    </ThemedView>
   );
 }

@@ -1,6 +1,8 @@
 import { Stack, useNavigation } from "expo-router";
 import { Text, View } from "react-native";
 import { useEffect } from "react";
+import { ThemedView } from "@/components/ThemedView";
+import { ThemedText } from "@/components/ThemedText";
 
 export default function Alarms() {
   const navigation = useNavigation();
@@ -10,8 +12,10 @@ export default function Alarms() {
   }, [navigation]);
 
   return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <Text>Alarms Screen</Text>
-    </View>
+    <ThemedView
+      style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+    >
+      <ThemedText>Alarms Screen</ThemedText>
+    </ThemedView>
   );
 }

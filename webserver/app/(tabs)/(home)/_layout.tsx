@@ -1,9 +1,19 @@
-import { Stack } from 'expo-router';
+import { Stack } from "expo-router";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
+import { Colors } from "@/constants/Colors";
+import { useColorScheme } from "@/hooks/useColorScheme";
 
 export default function HomeLayout() {
+  const colorScheme = useColorScheme();
   return (
-    <Stack>
-      <Stack.Screen name="Home" />
-    </Stack>
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <Stack>
+        <Stack.Screen name="Home" />
+      </Stack>
+    </ThemeProvider>
   );
 }
