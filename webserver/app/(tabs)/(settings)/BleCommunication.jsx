@@ -21,8 +21,27 @@ export const requestBluetoothPermission = async () => {
   return true;
 };
 
-export const scanForDevices = async (setDiscoveredDevices, setIsScanning) => {
-  // Scan logic here
+export const scanForDevices = async (
+  setDiscoveredDevices,
+  setIsScanning
+) => {
+  setIsScanning(true);
+  manager.startDeviceScan(null, null, (error, device) => {
+    if (error) {
+      console.error(error);
+      setIsScanning(false);
+      return;
+    }
+    if (device) {
+      setDiscoveredDevices((prevDevices) => [...prevDevices, device]);
+    }
+  });
+
+  // Stop scanning after a specified period
+  setTimeout(() => {
+    manager.stopDeviceScan();
+    setIsScanning(false);
+  }, 5000);
 };
 
 export const BleCommunication = () => {
@@ -31,14 +50,21 @@ export const BleCommunication = () => {
   const [hasPermission, setHasPermission] = useState(false);
 
   useEffect(() => {
-    // Bluetooth initialization logic here
+    const initializeBluetooth = async () => {
+      const permission = await requestBluetoothPermission();
+      setHasPermission(permission);
+    };
+    initializeBluetooth();
   }, []);
 
   return {
     discoveredDevices,
     isScanning,
     hasPermission, // Export permission state
-    scanForDevices: () => scanForDevices(setDiscoveredDevices, setIsScanning),
+    scanForDevices: () => scanForDevices(
+      setDiscoveredDevices,
+      setIsScanning
+    ),
     requestBluetoothPermission: async () => {
       const permission = await requestBluetoothPermission();
       setHasPermission(permission); // Update permission state
