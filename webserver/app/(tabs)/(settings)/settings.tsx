@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button, FlatList, StyleSheet, Text, View } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
@@ -7,9 +7,8 @@ import BleCommunication from "./BleCommunication";
 
 const renderItem = ({ item }: { item: Device }) => {
   return (
-    <View>
-      <Text>{item.name}</Text>
-      {/* Otro contenido del item si es necesario */}
+    <View style={styles.deviceItem}>
+      <Text style={styles.deviceText}>{item.name || "Unnamed Device"}</Text>
     </View>
   );
 };
@@ -25,6 +24,18 @@ interface BleCommunicationResult {
 export default function Settings() {
   // Assign the BleCommunication result to the defined type
   const bleCommunicationResult: BleCommunicationResult = BleCommunication();
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    const initializeBluetooth = async () => {
+      const permissionGranted =
+        await bleCommunicationResult.requestBluetoothPermission();
+      if (permissionGranted) {
+        setInitialized(true);
+      }
+    };
+    initializeBluetooth();
+  }, []);
 
   return (
     <ThemedView style={styles.container}>
@@ -35,11 +46,8 @@ export default function Settings() {
             ? "Stop Scanning"
             : "Scan for Devices"
         }
-        onPress={async () => {
-          await bleCommunicationResult.requestBluetoothPermission();
-          bleCommunicationResult.scanForDevices();
-        }}
-        disabled={bleCommunicationResult.isScanning}
+        onPress={bleCommunicationResult.scanForDevices}
+        disabled={bleCommunicationResult.isScanning || !initialized}
       />
       {bleCommunicationResult.discoveredDevices.length > 0 && (
         <FlatList
