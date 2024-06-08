@@ -1,55 +1,35 @@
-import { Stack, useNavigation } from "expo-router";
-import { Text, View, StyleSheet, Button, FlatList } from "react-native";
-import { useEffect, useState } from "react";
+import React from "react";
+import { Button, FlatList, StyleSheet, Text, View } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
-import { BleCommunication } from "./BleCommunication";
-import { Device } from "react-native-ble-plx"; // Import BleCommunication component
+import { Device } from "react-native-ble-plx";
+import {
+  BleCommunication,
+  requestBluetoothPermission,
+} from "./BleCommunication";
 
-export default function Settings() {
-  const navigation = useNavigation();
-  const [isScanning, setIsScanning] = useState(false);
-  const [discoveredDevices, setDiscoveredDevices] = useState<Device[]>([]);
-
-  const renderItem = ({ item }: { item: Device }) => (
-    <View style={styles.deviceItem}>
-      <Text style={styles.deviceText}>{item.name}</Text>
-      {/* Optional: Add button to connect to the device */}
-      {/* <Button title="Connect" onPress={() => connectToDevice(item)} /> */}
+const renderItem = ({ item }: { item: Device }) => {
+  return (
+    <View>
+      <Text>{item.name}</Text>
+      {/* Otro contenido del item si es necesario */}
     </View>
   );
+};
 
-  // Use BleCommunication component for Bluetooth functionality
-  const { scanForDevices, requestBluetoothPermission } = BleCommunication();
-
-  useEffect(() => {
-    const subscription = BleCommunication().manager.onStateChange(
-      (state: string) => {
-        // Specify type for state
-        if (state === "PoweredOn") {
-          scanForDevices();
-          subscription.remove();
-        }
-      },
-      true
-    );
-    return () => subscription.remove();
-  }, []);
+export default function Settings() {
+  const { scanForDevices, discoveredDevices, isScanning } = BleCommunication();
 
   return (
-    <ThemedView
-      style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-    >
-      <ThemedText style={styles.titleText}> Settings Screen </ThemedText>
+    <ThemedView style={styles.container}>
+      <ThemedText style={styles.titleText}>Settings Screen</ThemedText>
       <Button
         title={isScanning ? "Stop Scanning" : "Scan for Devices"}
         onPress={async () => {
-          if (!(await requestBluetoothPermission())) {
-            return; // Handle permission errors
-          }
+          await requestBluetoothPermission();
           scanForDevices();
         }}
-        disabled={!(await requestBluetoothPermission())} // Disable button if permissions not granted
+        disabled={isScanning} // Disable button if scanning is in progress
       />
       {discoveredDevices.length > 0 && (
         <FlatList
@@ -64,8 +44,10 @@ export default function Settings() {
 }
 
 const styles = StyleSheet.create({
-  baseText: {
-    fontFamily: "Cochin",
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
   titleText: {
     fontSize: 20,
