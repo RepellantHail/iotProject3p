@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { BleManager, PermissionsAndroid, Platform } from "react-native-ble-plx";
+import {
+  BleManager,
+  Device,
+  PermissionsAndroid,
+  Platform,
+} from "react-native-ble-plx";
 
 const BleCommunication = () => {
   const [discoveredDevices, setDiscoveredDevices] = useState([]);
@@ -9,12 +14,8 @@ const BleCommunication = () => {
 
   useEffect(() => {
     const initializeBluetooth = async () => {
-      if (Platform.OS === "android") {
-        const granted = await requestBluetoothPermission();
-        setHasPermission(granted);
-      } else {
-        setHasPermission(true);
-      }
+      const granted = await requestBluetoothPermission();
+      setHasPermission(granted);
     };
     initializeBluetooth();
   }, []);
@@ -27,30 +28,35 @@ const BleCommunication = () => {
   }, [hasPermission, bleManager]);
 
   const requestBluetoothPermission = async () => {
-    if (Platform.OS === "android") {
-      const apiLevel = parseInt(Platform.Version, 10);
-      if (apiLevel < 31) {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-        );
-        return granted === PermissionsAndroid.RESULTS.GRANTED;
-      } else {
-        const granted = await PermissionsAndroid.requestMultiple([
-          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-          PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        ]);
-        return (
-          granted["android.permission.BLUETOOTH_SCAN"] ===
-            PermissionsAndroid.RESULTS.GRANTED &&
-          granted["android.permission.BLUETOOTH_CONNECT"] ===
-            PermissionsAndroid.RESULTS.GRANTED &&
-          granted["android.permission.ACCESS_FINE_LOCATION"] ===
-            PermissionsAndroid.RESULTS.GRANTED
-        );
+    try {
+      if (Platform.OS === "android") {
+        const apiLevel = parseInt(Platform.Version, 10);
+        if (apiLevel < 31) {
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+          );
+          return granted === PermissionsAndroid.RESULTS.GRANTED;
+        } else {
+          const granted = await PermissionsAndroid.requestMultiple([
+            PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+            PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          ]);
+          return (
+            granted["android.permission.BLUETOOTH_SCAN"] ===
+              PermissionsAndroid.RESULTS.GRANTED &&
+            granted["android.permission.BLUETOOTH_CONNECT"] ===
+              PermissionsAndroid.RESULTS.GRANTED &&
+            granted["android.permission.ACCESS_FINE_LOCATION"] ===
+              PermissionsAndroid.RESULTS.GRANTED
+          );
+        }
+      } else if (Platform.OS === "ios") {
+        return true;
       }
-    } else if (Platform.OS === "ios") {
-      return true;
+    } catch (error) {
+      console.error("Error requesting Bluetooth permission:", error);
+      return false;
     }
     return false;
   };
@@ -87,12 +93,23 @@ const BleCommunication = () => {
     }, 5000);
   };
 
+  const connectToDevice = async (deviceId) => {
+    try {
+      const device = await bleManager.connectToDevice(deviceId);
+      await device.discoverAllServicesAndCharacteristics();
+      console.log("Device connected and services discovered:", device);
+    } catch (error) {
+      console.error("Failed to connect and discover services:", error);
+    }
+  };
+
   return {
     discoveredDevices,
     isScanning,
     hasPermission, // Export permission state
     scanForDevices,
     requestBluetoothPermission,
+    connectToDevice,
   };
 };
 

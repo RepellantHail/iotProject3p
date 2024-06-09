@@ -1,15 +1,28 @@
 import React, { useEffect, useState } from "react";
-import { Button, FlatList, StyleSheet, Text, View } from "react-native";
+import {
+  Button,
+  FlatList,
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+} from "react-native";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { Device } from "react-native-ble-plx";
 import BleCommunication from "./BleCommunication";
 
-const renderItem = ({ item }: { item: Device }) => {
+const renderItem = ({
+  item,
+  onPress,
+}: {
+  item: Device;
+  onPress: () => void;
+}) => {
   return (
-    <View style={styles.deviceItem}>
+    <TouchableOpacity style={styles.deviceItem} onPress={onPress}>
       <Text style={styles.deviceText}>{item.name || "Unnamed Device"}</Text>
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -19,6 +32,7 @@ interface BleCommunicationResult {
   hasPermission: boolean;
   scanForDevices: () => Promise<void>;
   requestBluetoothPermission: () => Promise<boolean>;
+  connectToDevice: (deviceId: string) => Promise<void>;
 }
 
 export default function Settings() {
@@ -52,7 +66,12 @@ export default function Settings() {
       {bleCommunicationResult.discoveredDevices.length > 0 && (
         <FlatList
           data={bleCommunicationResult.discoveredDevices}
-          renderItem={renderItem}
+          renderItem={({ item }) =>
+            renderItem({
+              item,
+              onPress: () => bleCommunicationResult.connectToDevice(item.id),
+            })
+          }
           keyExtractor={(item) => item.id}
           style={styles.deviceList}
         />
