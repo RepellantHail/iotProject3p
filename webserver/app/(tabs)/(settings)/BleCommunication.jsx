@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from "react";
-import {
-  BleManager,
-  Device,
-  PermissionsAndroid,
-  Platform,
-} from "react-native-ble-plx";
+import { BleManager, Device } from "react-native-ble-plx";
+import { PermissionsAndroid, Platform } from "react-native";
 
 const BleCommunication = () => {
   const [discoveredDevices, setDiscoveredDevices] = useState([]);

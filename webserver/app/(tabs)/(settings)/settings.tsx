@@ -21,7 +21,9 @@ const renderItem = ({
 }) => {
   return (
     <TouchableOpacity style={styles.deviceItem} onPress={onPress}>
-      <Text style={styles.deviceText}>{item.name || "Unnamed Device"}</Text>
+      <ThemedText style={styles.deviceText}>
+        {item.name || "Unnamed Device"}
+      </ThemedText>
     </TouchableOpacity>
   );
 };
