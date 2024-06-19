@@ -5,13 +5,15 @@ boolean bluetoothConnected = false;
 
 void setup() {
   Serial.begin(9600);
+  mySerial.begin(38400); 
   pinMode(ledPin, OUTPUT);
   digitalWrite(ledPin, LOW);
   while (!Serial) {
     ; 
   }
+  mySerial.println("AT+NAME=ModestoHC05");
+  mySerial.println("AT+PIN=1234");
 
-  mySerial.begin(38400); 
   Serial.println("Iniciando prueba del módulo Bluetooth");
 }
 
@@ -26,6 +28,11 @@ void loop() {
     } else if (dataFromBT == '0') {
       digitalWrite(ledPin, LOW); // Apaga el LED
       Serial.println("LED apagado");
+    }
+
+	 // Verifica si se ha recibido una respuesta adecuada del módulo Bluetooth para confirmar la configuración
+    if (dataFromBT == 'O' && mySerial.available() > 1 && mySerial.read() == 'K') {
+      Serial.println("Comando AT ejecutado correctamente");
     }
     
     // Verifica si se ha recibido una respuesta adecuada del módulo Bluetooth para confirmar la conexión
