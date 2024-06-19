@@ -3,23 +3,63 @@ import { Text, View, TextInput, Button, StyleSheet } from "react-native";
 import React, { useEffect, useState } from "react";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
+import io from "socket.io-client";
+
+const socket = io("http://192.168.0.107:3000");
 
 export default function Home() {
   const [command, setCommand] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const navigation = useNavigation();
-
-  const sendCommand = () => {
-    // Aquí enviarías el comando al servidor a través de Socket.io
-    console.log("Enviando comando:", command);
-    // Aquí puedes enviar `command` al servidor a través de Socket.io
-    // socket.emit('message', command);
-    setCommand(""); // Limpiar el campo de texto después de enviar
-  };
+  const [connected, setConnected] = useState(false);
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<string[]>([]);
 
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
+
+  useEffect(() => {
+    const handleConnect = () => {
+      setConnected(true);
+      console.log(socket.id); // Log the socket ID (for debugging only)
+    };
+
+    const handleDisconnect = (reason: string) => {
+      setConnected(false);
+      console.log(`Disconnected: ${reason}`);
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+
+    socket.on("message", (data: string) => {
+      setMessages((prevMessages) => [...prevMessages, data]);
+    });
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+      socket.off("message");
+    };
+  }, []);
+
+  const sendCommand = () => {
+    if (socket && connected) {
+      console.log("Enviando comando:", command);
+      socket.emit("message", command);
+      setCommand(""); // Limpiar el campo de texto después de enviar
+    } else {
+      console.log("Socket no está conectado.");
+    }
+  };
+
+  const sendMessage = () => {
+    if (message && socket && connected) {
+      socket.emit("message", message);
+      setMessage("");
+    }
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -31,15 +71,15 @@ export default function Home() {
           onChangeText={(text) => setCommand(text)}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          placeholder=""
+          placeholder="Ingrese comando (on/off)"
         />
-        {
-          <ThemedText style={styles.placeholder}>
-            {command ? command : "Ingrese comando (on/off)"}
-          </ThemedText>
-        }
         <Button title="Enviar" onPress={sendCommand} />
       </ThemedView>
+      <ThemedText>Connected: {connected ? "Yes" : "No"}</ThemedText>
+      <ThemedText>Messages:</ThemedText>
+      {messages.map((msg, index) => (
+        <ThemedText key={index}>{msg}</ThemedText>
+      ))}
     </ThemedView>
   );
 }
@@ -65,10 +105,5 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     padding: 10,
     marginRight: 10,
-  },
-  placeholder: {
-    position: "absolute",
-    left: 10,
-    top: 10,
   },
 });
