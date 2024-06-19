@@ -3,7 +3,7 @@ import { Text, View, TextInput, Button, StyleSheet } from "react-native";
 import React, { useEffect, useState } from "react";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
-import { useSocket } from "./socketCom";
+import { useSocket } from "@/components/socketCom";
 import Messages from "./messages";
 
 export default function Home() {
