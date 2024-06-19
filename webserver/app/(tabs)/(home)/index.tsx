@@ -3,7 +3,8 @@ import { Text, View, TextInput, Button, StyleSheet } from "react-native";
 import React, { useEffect, useState } from "react";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
-import socket, { useSocket } from "./socketCom";
+import { useSocket } from "./socketCom";
+import Messages from "./messages";
 
 export default function Home() {
   const [command, setCommand] = useState("");
@@ -18,12 +19,10 @@ export default function Home() {
   }, [navigation]);
 
   const sendCommand = () => {
-    if (socket && connected) {
+    if (command) {
       console.log("Enviando comando:", command);
-      socket.emit("message", command);
+      sendMessage(command); // Usamos la función sendMessage del hook
       setCommand(""); // Limpiar el campo de texto después de enviar
-    } else {
-      console.log("Socket no está conectado.");
     }
   };
 
@@ -43,9 +42,7 @@ export default function Home() {
       </ThemedView>
       <ThemedText>Connected: {connected ? "Yes" : "No"}</ThemedText>
       <ThemedText>Messages:</ThemedText>
-      {messages.map((msg, index) => (
-        <ThemedText key={index}>{msg}</ThemedText>
-      ))}
+      <Messages messages={messages} />
     </ThemedView>
   );
 }

@@ -23,7 +23,13 @@ export const useSocket = () => {
     socket.on("disconnect", handleDisconnect);
 
     socket.on("message", (data: string) => {
-      setMessages((prevMessages) => [...prevMessages, data]);
+      setMessages((prevMessages) => {
+        const newMessages = [...prevMessages, data];
+        if (newMessages.length > 5) {
+          newMessages.shift(); // Elimina el primer elemento si la longitud es mayor a 5
+        }
+        return newMessages;
+      });
     });
 
     return () => {
@@ -36,6 +42,13 @@ export const useSocket = () => {
   const sendMessage = (message: string) => {
     if (socket && connected) {
       socket.emit("message", message);
+      setMessages((prevMessages) => {
+        const newMessages = [...prevMessages, message];
+        if (newMessages.length > 5) {
+          newMessages.shift(); // Elimina el primer elemento si la longitud es mayor a 5
+        }
+        return newMessages;
+      });
     } else {
       console.log("Socket no está conectado.");
     }
@@ -47,5 +60,3 @@ export const useSocket = () => {
     sendMessage,
   };
 };
-
-export default socket;
