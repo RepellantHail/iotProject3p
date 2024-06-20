@@ -5,6 +5,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { useSocket } from "@/components/socketCom";
 import Messages from "./messages";
+import Melodies from "./melodies";
 
 export default function Home() {
   const [command, setCommand] = useState("");
@@ -26,6 +27,12 @@ export default function Home() {
     }
   };
 
+  const playMelody = (melodyName: string, duration: number) => {
+    const command = `play:${melodyName}:${duration}`;
+    console.log("Enviando comando:", command);
+    sendMessage(command);
+  };
+
   return (
     <ThemedView style={styles.container}>
       <ThemedText style={styles.title}>Home Screen</ThemedText>
@@ -40,6 +47,7 @@ export default function Home() {
         />
         <Button title="Enviar" onPress={sendCommand} />
       </ThemedView>
+      <Melodies playMelody={playMelody} />
       <ThemedText>Connected: {connected ? "Yes" : "No"}</ThemedText>
       <ThemedText>Messages:</ThemedText>
       <Messages messages={messages} />
@@ -61,6 +69,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
+    marginBottom: 20,
   },
   input: {
     flex: 1,
@@ -68,5 +77,11 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     padding: 10,
     marginRight: 10,
+  },
+  melodyContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "80%",
+    marginBottom: 20,
   },
 });

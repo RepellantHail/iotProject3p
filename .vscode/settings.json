@@ -1,0 +1,10 @@
+{
+  "workbench.colorCustomizations": {
+    "folderPathColor.custom1": "#FF4488",
+    "folderPathColor.custom2": "#FF8c00",
+    "folderPathColor.custom3": "#20CB42",
+    "activityBar.background": "#2E2C38",
+    "titleBar.activeBackground": "#413D4F",
+    "titleBar.activeForeground": "#FAFAFB"
+  }
+}
